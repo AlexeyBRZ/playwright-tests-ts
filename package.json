@@ -1,0 +1,28 @@
+{
+  "name": "playwright-tests-ts",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/AlexeyBRZ/playwright-tests-ts#readme",
+  "bugs": {
+    "url": "https://github.com/AlexeyBRZ/playwright-tests-ts/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexeyBRZ/playwright-tests-ts.git"
+  },
+  "license": "ISC",
+  "author": "Alexey",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test2": "node src/test.ts",
+    "docker build": "docker build --no-cache -t playwright-tests .",
+    "docker": "docker run --rm --ipc=host -v $(pwd):/app playwright-tests",
+    "pwr": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.1",
+    "typescript": "^5.9.3"
+  }
+}
