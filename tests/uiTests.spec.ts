@@ -43,7 +43,7 @@ test("check amount of added items in cart", async ({ page }) => {
   await expect(itemAmount).toEqual("3");
 });
 
-test("do items added to cart", async ({ page }) => {
+test("test if items displayed in cart", async ({ page }) => {
   await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click;
   page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
     .click;
