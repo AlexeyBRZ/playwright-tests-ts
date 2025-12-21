@@ -36,10 +36,10 @@ test("check amount of added items in cart", async ({ page }) => {
   const itemAmount = await page
     .locator('[data-test="shopping-cart-badge"]')
     .textContent();
-  await expect(itemAmount).toEqual("3");
+    expect(itemAmount).toEqual("3");
 });
 
-test.only("do items added to cart", async ({ page }) => {
+test("do items added to cart", async ({ page }) => {
   await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
   await page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
     .click();
