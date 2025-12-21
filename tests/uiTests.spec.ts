@@ -16,13 +16,13 @@ test("check checkout btn", async ({ page }) => {
   await page.locator('[data-test="add-to-cart"]').click();
   await page.locator('[data-test="shopping-cart-badge"]').click();
   const checkoutBtn = await page.locator(`//*[@data-test="checkout"]`);
-  expect(checkoutBtn).toBeEnabled;
+  expect(checkoutBtn).toBeVisible();
 });
 
 test("check logout", async ({ page }) => {
-  await page.locator('//div[@class="bm-burger-button"]').click();
-  page.locator('[data-test="logout-sidebar-link"]').click();
-  await expect(page.locator('[data-test="login-button"]')).toBeVisible();
+  await page.getByRole('button', { name: 'Open Menu' }).click()
+  await page.locator('[data-test="logout-sidebar-link"]').click();
+  expect(page.locator('[data-test="login-button"]')).toBeVisible();
 });
 
 test("check amount of added items in cart", async ({ page }) => {
@@ -58,7 +58,10 @@ test("check error for checkout without last name", async ({ page }) => {
   await page.locator('[data-test="firstName"]').fill("first_name");
   await page.locator('[data-test="continue"]').click();
   await expect(
-    page.locator('//h3[@data-test="error" and text()="Error: Last Name is required"]')).toBeVisible({timeout: 5000});
+    page.locator(
+      '//h3[@data-test="error" and text()="Error: Last Name is required"]',
+    ),
+  ).toBeVisible();
 });
 
 test("add to cart test", async ({ page }) => {
