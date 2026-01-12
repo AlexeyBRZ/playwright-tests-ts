@@ -15,7 +15,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test2": "node src/test.ts",
+    "homework24": "npx playwright test --project=problem-tests",
     "docker build": "docker build --no-cache -t playwright-tests .",
     "docker": "docker run --rm --ipc=host -v $(pwd):/app playwright-tests",
     "pwr": "npx playwright test",

@@ -40,6 +40,21 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
+    {
+      name: "problem-tests",
+      testDir: "./tests/homework24",
+      testMatch: "**/*.spec.ts",
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "auth/problem-user-state.json",
+      },
+      dependencies: ["setup-problem"],
+    },
+    {
+      name: "setup-problem",
+      testDir: "utils/setup",
+      testMatch: "global-setup.ts",
+    },
 
     // {
     //   name: 'firefox',

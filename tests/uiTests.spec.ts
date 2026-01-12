@@ -10,9 +10,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("check checkout btn", async ({ page }) => {
-  await page.locator(
-    `//*[@data-test='inventory-item-name' and contains(text(), 'Bolt T-Shirt')]`,
-  ).click();
+  await page
+    .locator(
+      `//*[@data-test='inventory-item-name' and contains(text(), 'Bolt T-Shirt')]`,
+    )
+    .click();
   await page.locator('[data-test="add-to-cart"]').click();
   await page.locator('[data-test="shopping-cart-badge"]').click();
   const checkoutBtn = await page.locator(`//*[@data-test="checkout"]`);
@@ -20,7 +22,7 @@ test("check checkout btn", async ({ page }) => {
 });
 
 test("check logout", async ({ page }) => {
-  await page.getByRole('button', { name: 'Open Menu' }).click()
+  await page.getByRole("button", { name: "Open Menu" }).click();
   await page.locator('[data-test="logout-sidebar-link"]').click();
   expect(page.locator('[data-test="login-button"]')).toBeVisible();
 });
@@ -36,16 +38,21 @@ test("check amount of added items in cart", async ({ page }) => {
   const itemAmount = await page
     .locator('[data-test="shopping-cart-badge"]')
     .textContent();
-    expect(itemAmount).toEqual("3");
+  expect(itemAmount).toEqual("3");
 });
 
 test("do items added to cart", async ({ page }) => {
   await page.locator('[data-test="add-to-cart-sauce-labs-backpack"]').click();
-  await page.locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
+  await page
+    .locator('[data-test="add-to-cart-test.allthethings()-t-shirt-(red)"]')
     .click();
-  await page.locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]').click();
+  await page
+    .locator('[data-test="add-to-cart-sauce-labs-fleece-jacket"]')
+    .click();
   await page.locator('[data-test="shopping-cart-link"]').click();
-   await expect(page.locator('//button[@data-test="remove-sauce-labs-fleece-jacket"]')).toBeEnabled();
+  await expect(
+    page.locator('//button[@data-test="remove-sauce-labs-fleece-jacket"]'),
+  ).toBeEnabled();
 });
 
 test("check error for checkout without last name", async ({ page }) => {
