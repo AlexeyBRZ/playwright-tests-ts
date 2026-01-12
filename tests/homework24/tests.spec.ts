@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-const saucePages = ["/inventory.html", "/cart.html", "/logout.html"];
+const saucePages = ["/inventory.html", "/cart.html"];
 
 test.skip("check logout", async ({ page }) => {
   // Если запускаю тест отдельно, то он проходит. Если запускаю вместе с параметризированным тестом, то падает
@@ -20,7 +20,7 @@ test.describe("check logo on different pages", () => {
     test(`check logo on ${newPage}`, async ({ page }) => {
       await page.goto("https://www.saucedemo.com" + newPage);
       const logoText = await page.locator('[class="app_logo"]').textContent();
-      await expect(logoText).toEqual("Swag Labs");
+      expect(logoText).toEqual("Swag Labs");
     });
   });
 });

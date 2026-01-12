@@ -41,7 +41,7 @@ test("screenshot test", async ({ page }) => {
 });
 
 test("check error for checkout without last name", async ({ page }) => {
-    await page.context().tracing.start({ screenshots: true, snapshots: true });
+  await page.context().tracing.start({ screenshots: true, snapshots: true });
   await page.locator('[data-test="add-to-cart-sauce-labs-onesie"]').click();
   await page.locator('[data-test="shopping-cart-link"]').click();
   await page.locator(`//*[@data-test="checkout"]`).click();
@@ -53,7 +53,7 @@ test("check error for checkout without last name", async ({ page }) => {
   await page.context().tracing.stop({ path: "test-tracing-1.zip" });
   await expect(
     page.locator(
-     '//h3[@data-test="error" and text()="Error: Last Name is required"]',
+      '//h3[@data-test="error" and text()="Error: Last Name is required"]',
     ),
   ).toBeVisible();
 });
