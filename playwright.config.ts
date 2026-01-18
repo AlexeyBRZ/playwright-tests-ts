@@ -55,6 +55,10 @@ export default defineConfig({
       testDir: "utils/setup",
       testMatch: "global-setup.ts",
     },
+    {
+      name: "api-tests",
+      testDir: "./tests/api-tests",
+    },
 
     // {
     //   name: 'firefox',
