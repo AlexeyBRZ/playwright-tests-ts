@@ -1,4 +1,31 @@
 import type { APIRequestContext } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+
+export function validateErrorResponse(
+  baseURL: string,
+  statusCode: number,
+  errorMessage: string,
+) {
+  return test(`should display error message on ${statusCode}`, async ({
+    page,
+  }) => {
+    await page.route(baseURL + "?action=getData", (route) => {
+      route.fulfill({
+        status: statusCode,
+        contentType: "application/json",
+        body: JSON.stringify({ message: errorMessage }),
+      });
+    });
+
+    await page.goto(baseURL);
+    await page.locator(".card #fetchBtn").click();
+
+    await expect(page.locator("#result")).toHaveClass("error");
+    await expect(page.locator("#result")).toHaveText(
+      `Error ${statusCode}: ${errorMessage}`,
+    );
+  });
+}
 
 const testObject: Object = {
   id: 6,
