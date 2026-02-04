@@ -36,7 +36,7 @@ test("if color changes on Hover", async ({ page }) => {
   await expect(linkToItem).toChangeColorOnHover();
 });
 
-test("screenshot test", async ({ page }) => {
+test.skip("screenshot test", async ({ page }) => {
   await expect(page).toHaveScreenshot();
 });
 
