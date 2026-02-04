@@ -1,140 +1,102 @@
 name: Playwright Tests
-
 on:
   push:
-    branches: [main, master]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, master]
-  workflow_dispatch:
+    branches: [ main, master ]
+  # schedule:
+  #   - cron: '0 8 * * *'  
+  workflow_dispatch:  # Manual trigger button
     inputs:
       SCOPE:
-        description: 'Which tests to run'
-        required: true
-        default: 'all'
+        description: 'Test scope to run'
+        required: false
+        default: 'full'
         type: choice
         options:
-          - all
           - api
-          - PO
-          - homework24
-          - full-test
-      EXTRA_ARGS:
-        description: 'Extra arguments for playwright test (e.g. --project=api-tests --headed)'
+          - e2e
+          - full
+      RUN_ARGS:
+        description: 'Additional arguments for the test run'
         required: false
+        default: ''
         type: string
-
 jobs:
-  type-check:
+  test-types:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - name: Install dependencies
-        run: npm ci
-      - name: Run TypeScript type checks
-        run: npm run types:test
-
-  api-tests:
-    needs: type-check
-    if: ${{ github.event.inputs.SCOPE == 'api' || github.event.inputs.SCOPE == 'all' }}
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+    - name: Run TypeScript type checks
+      run: npm run types:test
+  test:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-jammy
     steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm ci
-      - name: Run API tests
-        run: npm run api
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-api
-          path: playwright-report/
-          retention-days: 7
-
-  po-tests:
-    needs: type-check
-    if: ${{ github.event.inputs.SCOPE == 'PO' || github.event.inputs.SCOPE == 'all' }}
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+  api:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     container:
       image: mcr.microsoft.com/playwright:v1.57.0-jammy
     steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm ci
-      - name: Run PO tests
-        run: npm run PO
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-po
-          path: playwright-report/
-          retention-days: 7
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+    - name: run api tests
+      run: npm run api
+      
+    - name: Run Playwright tests
+      env:
+        SCOPE: ${{ github.event.inputs.SCOPE || 'full' }}
+        RUN_ARGS: ${{ github.event.inputs.RUN_ARGS }}
+      run: |
+        echo "Event: ${{ github.event_name }}"
+        echo "Scope: $SCOPE"
 
-  homework24-tests:
-    needs: type-check
-    if: ${{ github.event.inputs.SCOPE == 'homework24' || github.event.inputs.SCOPE == 'all' }}
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.57.0-jammy
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm ci
-      - name: Run homework24 tests
-        run: npm run homework24
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-homework24
-          path: playwright-report/
-          retention-days: 7
+        if [ "${{ github.event_name }}" == "schedule" ]; then
+          echo "Executing scheduled run..."
+          npx playwright test
+        elif [ "$SCOPE" == "api" ]; then
+          npx playwright test --project api
+        elif [ "$SCOPE" == "e2e" ]; then
+          npx playwright test --project e2e
+        elif [ -n "$RUN_ARGS" ]; then
+          echo "Executing with custom args: $RUN_ARGS"
+          npx playwright test $RUN_ARGS
+        else
+          echo "Falling back to default run..."
+          npx playwright test
+        fi
 
-  full-tests:
-    needs: type-check
-    if: ${{ github.event.inputs.SCOPE == 'full-test' || github.event.inputs.SCOPE == 'all' }}
-    runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.57.0-jammy
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install dependencies
-        run: npm ci
-      - name: Run all Playwright tests
-        env:
-          EXTRA_ARGS: ${{ github.event.inputs.EXTRA_ARGS }}
-        run: npx playwright test $EXTRA_ARGS
-      - name: Upload report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report-full
-          path: playwright-report/
-          retention-days: 7
+    - name: Upload Playwright Report as Artifact
+      if: ${{ !cancelled() }} # runs the step even if previous steps failed, but skips it if the workflow was manually cancelled.
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 1
 
-  
-  publish-report:
-    needs: [api-tests, po-tests, homework24-tests, full-tests]
-    if: ${{ always() && (github.event.inputs.SCOPE == 'all' || github.event.inputs.SCOPE == 'full-test') }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./playwright-report-full
-          destination_dir: playwright-report
-          force_orphan: true  # перезаписываем старые отчёты
+    - name: Upload Playwright Report to GitHub Pages
+      if: ${{ !cancelled() }}
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: playwright-report/
+
+    - name: Deploy to GitHub Pages
+      if: ${{ !cancelled() }}
+      uses: actions/deploy-pages@v4
+      id: deployment
+
+    - name: Display report URL
+      if: ${{ !cancelled() }}
+      run: echo "📊 Test Report is available at ${{ steps.deployment.outputs.page_url }}"
 
 permissions:
   contents: read
