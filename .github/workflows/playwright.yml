@@ -30,7 +30,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Run TypeScript type checks
-      run: npm run types:test
+      run: npm run ui_tests
   test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
@@ -47,8 +47,6 @@ jobs:
       image: mcr.microsoft.com/playwright:v1.57.0-jammy
     steps:
     - uses: actions/checkout@v4
-    - name: Install dependencies
-      run: npm ci
     - name: run api tests
       run: npm run api
       
