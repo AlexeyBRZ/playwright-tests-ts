@@ -1,0 +1,106 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  # schedule:
+  #   - cron: '0 8 * * *'  
+  workflow_dispatch:  # Manual trigger button
+    inputs:
+      SCOPE:
+        description: 'Test scope to run'
+        required: false
+        default: 'full'
+        type: choice
+        options:
+          - api
+          - e2e
+          - full
+      RUN_ARGS:
+        description: 'Additional arguments for the test run'
+        required: false
+        default: ''
+        type: string
+jobs:
+  uiTests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-jammy
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+    - name: Run TypeScript type checks
+      run: npm run ui_tests
+  test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-jammy
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+  api:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-jammy
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies
+      run: npm ci
+    - name: run api tests
+      run: npm run api
+      
+    - name: Run Playwright tests
+      env:
+        SCOPE: ${{ github.event.inputs.SCOPE || 'full' }}
+        RUN_ARGS: ${{ github.event.inputs.RUN_ARGS }}
+      run: |
+        echo "Event: ${{ github.event_name }}"
+        echo "Scope: $SCOPE"
+
+        if [ "${{ github.event_name }}" == "schedule" ]; then
+          echo "Executing scheduled run..."
+          npx playwright test
+        elif [ "$SCOPE" == "api" ]; then
+          npx playwright test --project api
+        elif [ "$SCOPE" == "e2e" ]; then
+          npx playwright test --project e2e
+        elif [ -n "$RUN_ARGS" ]; then
+          echo "Executing with custom args: $RUN_ARGS"
+          npx playwright test $RUN_ARGS
+        else
+          echo "Falling back to default run..."
+          npx playwright test
+        fi
+
+    - name: Upload Playwright Report as Artifact
+      if: ${{ !cancelled() }} # runs the step even if previous steps failed, but skips it if the workflow was manually cancelled.
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: playwright-report/
+        retention-days: 1
+
+    - name: Upload Playwright Report to GitHub Pages
+      if: ${{ !cancelled() }}
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: playwright-report/
+
+    - name: Deploy to GitHub Pages
+      if: ${{ !cancelled() }}
+      uses: actions/deploy-pages@v4
+      id: deployment
+
+    - name: Display report URL
+      if: ${{ !cancelled() }}
+      run: echo "📊 Test Report is available at ${{ steps.deployment.outputs.page_url }}"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write

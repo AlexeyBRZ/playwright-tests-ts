@@ -17,10 +17,11 @@
   "scripts": {
     "api": "npx playwright test --project=api-tests",
     "PO": "npx playwright test test_PO.spec.ts",
+    "ui_tests": "npx playwright test uiTests.spec.ts",
     "homework24": "npx playwright test --project=problem-tests",
     "docker build": "docker build --no-cache -t playwright-tests .",
     "docker": "docker run --rm --ipc=host -v $(pwd):/app playwright-tests",
-    "pwr": "npx playwright test",
+    "test": "npx playwright test",
     "pret": "npx prettier --write ."
   },
   "devDependencies": {

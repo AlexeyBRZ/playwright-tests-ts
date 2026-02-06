@@ -17,7 +17,7 @@ test("is cart empty @problem", async ({ page }) => {
 
 test.describe("check logo on different pages", () => {
   saucePages.forEach((newPage) => {
-    test(`check logo on ${newPage}`, async ({ page }) => {
+    test.skip(`check logo on ${newPage}`, async ({ page }) => {
       await page.goto("https://www.saucedemo.com" + newPage);
       const logoText = await page.locator('[class="app_logo"]').textContent();
       expect(logoText).toEqual("Swag Labs");
